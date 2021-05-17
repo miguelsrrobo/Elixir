@@ -19,12 +19,11 @@ defmodule Conta do
   def busca_contas_email(email), do: Enum.find(busca_contas(), &(&1.usuario.email == email))
 
   def transferir(contas, de, para, valor) do
-    #de = Enum.find(contas, fn conta -> conta.usuario.email == de.usuario.email end)
     de = busca_contas_email(de.usuario.email)
     cond do
       valida_saldo(de.saldo, valor) -> {:error, "Saldo insuficiente!"}
       true ->
-        para = Enum.find(contas, fn conta -> conta.usuario.email == para.usuario.email end)
+        para = busca_contas_email(para.usuario.email)
         de = %Conta{de | saldo: de.saldo - valor}
         para = %Conta{para | saldo: para.saldo + valor}
         {de, para}
