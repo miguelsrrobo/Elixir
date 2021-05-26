@@ -4,11 +4,14 @@ defmodule Conta do
   @contas "contas.txt"
 
   def cadastrar(usuario) do
-    contas = busca_contas()
-
-    binary = [%__MODULE__{usuario: usuario}] ++ busca_contas()
-    |> :erlang.term_to_binary()
-     File.write(@contas, binary)
+    #contas = busca_contas()
+    case busca_contas_email(usuario.email) do
+      nil ->
+      binary = [%__MODULE__{usuario: usuario}] ++ busca_contas()
+      |> :erlang.term_to_binary()
+       File.write(@contas, binary)
+       _ -> {:error, "Conta ja cadastrada"}
+    end
   end
 
   def busca_contas do
@@ -18,7 +21,7 @@ defmodule Conta do
 
   def busca_contas_email(email), do: Enum.find(busca_contas(), &(&1.usuario.email == email))
 
-  def transferir(contas, de, para, valor) do
+  def transferir(de, para, valor) do
     de = busca_contas_email(de.usuario.email)
     cond do
       valida_saldo(de.saldo, valor) -> {:error, "Saldo insuficiente!"}
@@ -26,7 +29,7 @@ defmodule Conta do
         para = busca_contas_email(para.usuario.email)
         de = %Conta{de | saldo: de.saldo - valor}
         para = %Conta{para | saldo: para.saldo + valor}
-        {de, para}
+      [de, para]
     end
   end
 
